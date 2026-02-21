@@ -22,7 +22,6 @@ type User struct {
     PasswordHash string    `gorm:"not null" json:"-"`
     CreatedAt    time.Time `json:"created_at"`
     UpdatedAt    time.Time `json:"updated_at"`
-    APIKeys      []APIKey  `gorm:"foreignKey:UserID" json:"-"`
 }
 
 type RegisterRequest struct {
@@ -30,11 +29,26 @@ type RegisterRequest struct {
     Password string `json:"password" binding:"required,min=8"`
 }
 
+type LoginRequest struct {
+    Email    string `json:"email" binding:"required,email"`
+    Password string `json:"password" binding:"required"`
+}
+
+type AuthToken struct {
+    ID         uint      `gorm:"primaryKey"`
+    UserID     uint      `gorm:"not null;index"`
+    TokenHash  string    `gorm:"not null;uniqueIndex" json:"-"`
+    IsActive   bool      `gorm:"default:true"`
+    ExpiresAt  *time.Time
+    CreatedAt  time.Time
+    LastUsedAt *time.Time
+}
+
 type APIKey struct {
     ID         uint       `gorm:"primaryKey" json:"id"`
     UserID     uint       `gorm:"not null;index" json:"user_id"`
     KeyHash    string     `gorm:"not null;uniqueIndex" json:"-"`
-    Prefix     string     `gorm:"not null" json:"prefix"`    // first 8 chars for display
+    Prefix     string     `gorm:"not null" json:"prefix"`
     Name       string     `json:"name"`
     IsActive   bool       `gorm:"default:true" json:"is_active"`
     LastUsedAt *time.Time `json:"last_used_at"`
