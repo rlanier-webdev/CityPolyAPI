@@ -3,82 +3,17 @@ package main
 import (
 	"crypto/rand"
 	"crypto/sha256"
-	"encoding/base64"
 	"encoding/hex"
-	"errors"
 	"net/http"
 	"strings"
-	"unicode"
 
 	"github.com/gin-gonic/gin"
+	"github.com/rlanier-webdev/RivalryAPIv2/helpers"
 	"github.com/rlanier-webdev/RivalryAPIv2/models"
+	"github.com/rlanier-webdev/RivalryAPIv2/utils"
 	"golang.org/x/crypto/bcrypt"
 )
 
-func validatePassword(password string) error {
-	var errs []string
-
-	var hasUpper, hasLower, hasNumber, hasSymbol bool
-	for _, char := range password {
-		switch {
-		case unicode.IsUpper(char):
-			hasUpper = true
-		case unicode.IsLower(char):
-			hasLower = true
-		case unicode.IsDigit(char):
-			hasNumber = true
-		case unicode.IsPunct(char) || unicode.IsSymbol(char):
-			hasSymbol = true
-		}
-	}
-
-	if !hasUpper {
-		errs = append(errs, "must contain at least one uppercase letter")
-	}
-	if !hasLower {
-		errs = append(errs, "must contain at least one lowercase letter")
-	}
-	if !hasNumber {
-		errs = append(errs, "must contain at least one number")
-	}
-	if !hasSymbol {
-		errs = append(errs, "must contain at least one symbol (e.g. !@#$%)")
-	}
-
-	if len(errs) > 0 {
-		return errors.New(strings.Join(errs, "; "))
-	}
-
-	return nil
-}
-
-func bearerToken() (rawToken string, tokenHash string, err error) {
-	prefix := "bearer_"
-
-	// Generate 32 random bytes
-	bytes := make([]byte, 32)
-	if _, err := rand.Read(bytes); err != nil {
-		return "", "", err
-	}
-
-	// Hex encode
-	encoded := hex.EncodeToString(bytes)
-
-	// Add prefix
-	token := prefix + encoded
-
-	// Create a new hash instance
-	hasher := sha256.New()
-
-	// Write the token bytes to the hasher
-	hasher.Write([]byte(token))
-
-	// Get the finalized hash result as a byte slice
-	tokenHash = hex.EncodeToString(hasher.Sum(nil))
-
-	// Encode the byte slice into a human-readable hexadecimal string
-	return token, tokenHash, nil
-}
 
 func registerHandler(c *gin.Context) {
 	var request models.RegisterRequest
@@ -93,7 +28,7 @@ func registerHandler(c *gin.Context) {
 	email := strings.ToLower(strings.TrimSpace(request.Email))
 
 	// Validate password
-	if err := validatePassword(request.Password); err != nil {
+	if err := utils.ValidatePassword(request.Password); err != nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": "Password doesn't meet requirements."})
 		return
 	}
@@ -148,7 +83,7 @@ func loginHandler(c *gin.Context) {
 		return
 	}
 
-	rawToken, tokenHash, err := bearerToken()
+	rawToken, tokenHash, err := helpers.BearerToken()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate token"})
 		return
@@ -170,34 +105,81 @@ func loginHandler(c *gin.Context) {
 }
 
 func createAPIKeyHandler(c *gin.Context) {
-	// Extract from header
-	authHeader := c.GetHeader("Authorization")
-
-	if authHeader == "" {
-		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error":"Header Required"})
-		return
-	}
-
-	parts := strings.Split(authHeader, " ")
-	if len(parts) != 2 || parts[0] != "Basic" {
-		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid format"}) //
-		return
-	}
-
-	decoded := base64.StdEncoding.DecodeString(parts[1])
-	email := 
-	password := strings.SplitN(string(decoded), ":", 2)
+	userIDVal, _ := c.Get("userID")
+	userID := userIDVal.(uint)
 
 	buf := make([]byte, 32)
-	rand.Read(buf)                             // crypto/rand
+	if _, err := rand.Read(buf); err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to generate key"})
+        return
+    }
+
 	rawKey := "riv_" + hex.EncodeToString(buf) // "riv_" + 64 hex chars = 68 total
 	sum := sha256.Sum256([]byte(rawKey))
 	hash := hex.EncodeToString(sum[:])
 	prefix := rawKey[4:12] // first 8 chars of hex portion
-}
-func listAPIKeyHandler(c *gin.Context) {
 
+	if err := db.Create(&models.APIKey{UserID: userID, KeyHash: hash, Prefix: prefix}).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create key"})
+		return
+	}
+
+	c.JSON(http.StatusCreated, gin.H {
+		"key": rawKey,
+		"note": "Store this safely. It will not be shown again.",
+	})
+}
+
+func listAPIKeyHandler(c *gin.Context) {
+	userIDVal, _ := c.Get("userID")
+	userID := userIDVal.(uint)
+
+	var keys []models.APIKey
+	if err := db.Where("user_id = ? AND is_active = ?", userID, true).Find(&keys).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve key"})
+		return
+	}
+
+	c.JSON(http.StatusOK, keys)
 }
 func revokeAPIKeyHandler(c *gin.Context) {
+	userIDVal, _ := c.Get("userID")
+	userID := userIDVal.(uint)
+	id := c.Param("id")
+	
+	result := db.Model(&models.APIKey{}).Where("id = ? AND user_id = ?", id, userID).Update("is_active", false)
+	if result.Error != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error":"Failed to revoke key"})
+		return
+	}
+	if result.RowsAffected == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"error":"Key doesn't exist"})
+		return
+	}
 
+	c.Status(http.StatusNoContent)
+}
+
+func logoutHandler(c *gin.Context) {
+	// Get the raw token from the Authorization header
+	authHeader := c.GetHeader("Authorization")
+	if authHeader == "" || !strings.HasPrefix(authHeader, "Bearer ") {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Authorization header required"})
+		return
+	}
+
+	rawToken := strings.TrimPrefix(authHeader, "Bearer ")
+	rawToken = strings.TrimSpace(rawToken)
+	
+	// Hash the token to match what’s stored in the database
+	sum := sha256.Sum256([]byte(rawToken))
+	tokenHash := hex.EncodeToString(sum[:])
+
+	// Look up the active token
+	if err := db.Model(&models.AuthToken{}).Where("token_hash = ?", tokenHash).Update("is_active", false).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to revoke token"})
+		return
+	}
+
+	c.Status(http.StatusNoContent)
 }
