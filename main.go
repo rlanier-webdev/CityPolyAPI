@@ -2,7 +2,6 @@ package main
 
 import (
 	"log"
-	"net/http"
 	"os"
 	"sync"
 
@@ -11,8 +10,8 @@ import (
 	"github.com/glebarez/sqlite"
 	"github.com/joho/godotenv"
 	"github.com/rlanier-webdev/RivalryAPIv2/frontend"
+	"github.com/rlanier-webdev/RivalryAPIv2/middleware"
 	"github.com/rlanier-webdev/RivalryAPIv2/models"
-	"golang.org/x/time/rate"
 	"gorm.io/gorm"
 )
 
@@ -20,33 +19,9 @@ var (
 	db       *gorm.DB
 	err      error
 	once     sync.Once
-	limiters = make(map[string]*rate.Limiter)
-	limiterMu sync.Mutex
 )
 
-// rateLimitMiddleware limits requests per IP address
-func rateLimitMiddleware() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		ip := c.ClientIP()
 
-		limiterMu.Lock()
-		limiter, exists := limiters[ip]
-		if !exists {
-			// Allow 10 requests per second with burst of 20
-			limiter = rate.NewLimiter(10, 20)
-			limiters[ip] = limiter
-		}
-		limiterMu.Unlock()
-
-		if !limiter.Allow() {
-			c.AbortWithStatusJSON(http.StatusTooManyRequests, gin.H{
-				"error": "Too many requests. Please slow down.",
-			})
-			return
-		}
-		c.Next()
-	}
-}
 
 func init() {
 	// Load .env file if present (local dev only, ignored in production)
@@ -103,7 +78,7 @@ func main() {
 	}))
 
 	// Rate limiting (10 req/s per IP, burst of 20)
-	r.Use(rateLimitMiddleware())
+	r.Use(middleware.RateLimitMiddleware())
 
 	r.Static("/static", "./static")
 	r.LoadHTMLGlob("templates/*")
