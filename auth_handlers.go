@@ -111,7 +111,15 @@ func loginHandler(c *gin.Context) {
 		return
 	}
 
-	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash))
+	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(request.Password)); err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
+		return
+	}
+	// Return success created
+	c.JSON(http.StatusCreated, gin.H{
+		"message":"Login successfully", 
+		"userID": user.ID,
+	})
 }
 
 func createAPIKeyHandler(c *gin.Context) {
