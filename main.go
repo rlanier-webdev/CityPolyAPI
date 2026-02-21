@@ -60,7 +60,7 @@ func initDB() {
 			log.Fatal("failed to connect to database: ", err)
 		}
 
-		err = db.AutoMigrate(&models.Game{})
+		err = db.AutoMigrate(&models.Game{}, &models.User{}, &models.APIKey{})
 		if err != nil {
 			log.Fatal("failed to migrate database: ", err)
 		}
