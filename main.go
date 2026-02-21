@@ -71,8 +71,8 @@ func main() {
 	// CORS configuration for API access
 	r.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"*"},
-		AllowMethods:     []string{"GET", "OPTIONS"},
-		AllowHeaders:     []string{"Origin", "Content-Type", "Accept"},
+		AllowMethods:     []string{"GET", "OPTIONS", "POST", "DELETE"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Accept","X-API-Key", "Authorization"},
 		AllowCredentials: false,
 		MaxAge:           86400,
 	}))
@@ -88,14 +88,29 @@ func main() {
 	r.GET("/docs", frontend.DocumentationPageHandler)
 	r.GET("/games", frontend.GamesPageHandler)
 
-	r.GET("/api", getMainHandler)
-	r.GET("/api/games", getGamesHandler)
-	r.GET("/api/games/:id", getGameByIDHandler)
-	r.GET("/api/games/year/:year", getGamesByYearHandler)
-	r.GET("/api/games/home/:team", getGamesByHomeHandler)
-	r.GET("/api/games/away/:team", getGamesByAwayHandler)
+	// Public auth (no middleware)
+	auth := r.Group("/api/auth")
+	auth.POST("/register", registerHandler)
+	auth.POST("/login", loginHandler)
 
-	r.GET("/api/teams", getTeamsHandler)
+	// Bearer-protected auth
+	authBearer := auth.Group("/", middleware.BearerAuth(db))
+	authBearer.POST("/logout", logoutHandler)
+	authBearer.POST("/keys", createAPIKeyHandler)
+	authBearer.GET("/keys", listAPIKeyHandler)
+	authBearer.DELETE("/keys/:id", revokeAPIKeyHandler)
+
+	// API key protected data routes
+	api := r.Group("/api", middleware.APIKeyAuth(db))
+	api.GET("/games", getGamesHandler)
+	api.GET("/games/:id", getGameByIDHandler)
+	api.GET("/games/year/:year", getGamesByYearHandler)
+	api.GET("/games/home/:team", getGamesByHomeHandler)
+	api.GET("/games/away/:team", getGamesByAwayHandler)
+	api.GET("/teams", getTeamsHandler)
+
+	// Public health check (stays as-is)
+	r.GET("/api", getMainHandler)
 
 	port := os.Getenv("PORT")
 	if port == "" {
