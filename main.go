@@ -79,6 +79,8 @@ func main() {
 	// Trust Railway's proxy headers
 	r.SetTrustedProxies([]string{"127.0.0.1"})
 
+	r.Use(middleware.SecurityHeaders())
+	
 	// CORS configuration for API access
 	r.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"*"},
