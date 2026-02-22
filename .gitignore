@@ -2,7 +2,7 @@
 /archive
 .env
 CLAUDE.md
-RivalryAPIv2.exe
 openapi.json
 ROADMAP.md
-games.db
+*.db
+*.exe

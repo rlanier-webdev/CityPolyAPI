@@ -3,7 +3,7 @@ package models
 import (
 	"time"
 
-	"github.com/rlanier-webdev/RivalryAPIv2/utils"
+	"github.com/rlanier-webdev/CityPolyAPI/utils"
 )
 
 type Game struct {

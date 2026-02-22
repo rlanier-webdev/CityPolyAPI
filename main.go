@@ -9,9 +9,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/glebarez/sqlite"
 	"github.com/joho/godotenv"
-	"github.com/rlanier-webdev/RivalryAPIv2/frontend"
-	"github.com/rlanier-webdev/RivalryAPIv2/middleware"
-	"github.com/rlanier-webdev/RivalryAPIv2/models"
+	"github.com/rlanier-webdev/CityPolyAPI/frontend"
+	"github.com/rlanier-webdev/CityPolyAPI/middleware"
+	"github.com/rlanier-webdev/CityPolyAPI/models"
 	"gorm.io/gorm"
 )
 

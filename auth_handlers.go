@@ -8,9 +8,9 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/rlanier-webdev/RivalryAPIv2/helpers"
-	"github.com/rlanier-webdev/RivalryAPIv2/models"
-	"github.com/rlanier-webdev/RivalryAPIv2/utils"
+	"github.com/rlanier-webdev/CityPolyAPI/helpers"
+	"github.com/rlanier-webdev/CityPolyAPI/models"
+	"github.com/rlanier-webdev/CityPolyAPI/utils"
 	"golang.org/x/crypto/bcrypt"
 )
 

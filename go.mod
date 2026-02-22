@@ -1,4 +1,4 @@
-module github.com/rlanier-webdev/RivalryAPIv2
+module github.com/rlanier-webdev/CityPolyAPI
 
 go 1.24.0
 
