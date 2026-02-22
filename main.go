@@ -10,9 +10,10 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/glebarez/sqlite"
 	"github.com/joho/godotenv"
-	"github.com/rlanier-webdev/RivalryAPIv2/frontend"
-	"github.com/rlanier-webdev/RivalryAPIv2/models"
-	"golang.org/x/time/rate"
+	"github.com/rlanier-webdev/CityPolyAPI/frontend"
+	"github.com/rlanier-webdev/CityPolyAPI/internal/handlers"
+	"github.com/rlanier-webdev/CityPolyAPI/internal/middleware"
+	"github.com/rlanier-webdev/CityPolyAPI/internal/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -33,11 +34,11 @@ func initDB() {
 		dsn := os.Getenv("DATABASE_URL")
 		if dsn != "" {
 			// Production: PostgreSQL (Railway)
-        db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
-    } else {
-        // Development: SQLite
-        db, err = gorm.Open(sqlite.Open("games.db"), &gorm.Config{})
-    }
+			db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
+		} else {
+			// Development: SQLite
+			db, err = gorm.Open(sqlite.Open("games.db"), &gorm.Config{})
+		}
 		
 		if err != nil {
 			log.Fatal("failed to connect to database: ", err)
