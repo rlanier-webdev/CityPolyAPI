@@ -13,6 +13,7 @@ import (
 	"github.com/rlanier-webdev/RivalryAPIv2/frontend"
 	"github.com/rlanier-webdev/RivalryAPIv2/models"
 	"golang.org/x/time/rate"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
@@ -55,7 +56,15 @@ func init() {
 
 func initDB() {
 	once.Do(func() {
-		db, err = gorm.Open(sqlite.Open("games.db"), &gorm.Config{})
+		dsn := os.Getenv("DATABASE_URL")
+		if dsn != "" {
+			// Production: PostgreSQL (Railway)
+            db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
+        } else {
+            // Development: SQLite
+            db, err = gorm.Open(sqlite.Open("games.db"), &gorm.Config{})
+        }
+		
 		if err != nil {
 			log.Fatal("failed to connect to database: ", err)
 		}
