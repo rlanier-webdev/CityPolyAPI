@@ -10,18 +10,17 @@ import (
 	"github.com/glebarez/sqlite"
 	"github.com/joho/godotenv"
 	"github.com/rlanier-webdev/CityPolyAPI/frontend"
+	"github.com/rlanier-webdev/CityPolyAPI/internal/handlers"
 	"github.com/rlanier-webdev/CityPolyAPI/internal/middleware"
 	"github.com/rlanier-webdev/CityPolyAPI/internal/models"
 	"gorm.io/gorm"
 )
 
 var (
-	db       *gorm.DB
-	err      error
-	once     sync.Once
+	db   *gorm.DB
+	err  error
+	once sync.Once
 )
-
-
 
 func init() {
 	// Load .env file if present (local dev only, ignored in production)
@@ -61,6 +60,8 @@ func main() {
 	initDB()
 	frontend.SetDB(db)
 
+	h := &handlers.Handler{DB: db}
+
 	// Release mode
 	gin.SetMode(gin.ReleaseMode)
 	r := gin.Default()
@@ -72,7 +73,7 @@ func main() {
 	r.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"*"},
 		AllowMethods:     []string{"GET", "OPTIONS", "POST", "DELETE"},
-		AllowHeaders:     []string{"Origin", "Content-Type", "Accept","X-API-Key", "Authorization"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "X-API-Key", "Authorization"},
 		AllowCredentials: false,
 		MaxAge:           86400,
 	}))
@@ -80,8 +81,8 @@ func main() {
 	// Rate limiting (10 req/s per IP, burst of 20)
 	r.Use(middleware.RateLimitMiddleware())
 
-	r.Static("/static", "./static")
-	r.LoadHTMLGlob("templates/*")
+	r.Static("/static", "./frontend/static")
+	r.LoadHTMLGlob("frontend/templates/*")
 
 	r.GET("/", frontend.IndexPageHandler)
 	r.GET("/search", frontend.SearchPageHandler)
@@ -90,27 +91,27 @@ func main() {
 
 	// Public auth (no middleware)
 	auth := r.Group("/api/auth")
-	auth.POST("/register", registerHandler)
-	auth.POST("/login", loginHandler)
+	auth.POST("/register", h.RegisterHandler)
+	auth.POST("/login", h.LoginHandler)
 
 	// Bearer-protected auth
 	authBearer := auth.Group("/", middleware.BearerAuth(db))
-	authBearer.POST("/logout", logoutHandler)
-	authBearer.POST("/keys", createAPIKeyHandler)
-	authBearer.GET("/keys", listAPIKeyHandler)
-	authBearer.DELETE("/keys/:id", revokeAPIKeyHandler)
+	authBearer.POST("/logout", h.LogoutHandler)
+	authBearer.POST("/keys", h.CreateAPIKeyHandler)
+	authBearer.GET("/keys", h.ListAPIKeyHandler)
+	authBearer.DELETE("/keys/:id", h.RevokeAPIKeyHandler)
 
 	// API key protected data routes
 	v2 := r.Group("/api/v2", middleware.APIKeyAuth(db))
-	v2.GET("/games", getGamesHandler)
-	v2.GET("/games/:id", getGameByIDHandler)
-	v2.GET("/games/year/:year", getGamesByYearHandler)
-	v2.GET("/games/home/:team", getGamesByHomeHandler)
-	v2.GET("/games/away/:team", getGamesByAwayHandler)
-	v2.GET("/teams", getTeamsHandler)
+	v2.GET("/games", h.GetGamesHandler)
+	v2.GET("/games/:id", h.GetGameByIDHandler)
+	v2.GET("/games/year/:year", h.GetGamesByYearHandler)
+	v2.GET("/games/home/:team", h.GetGamesByHomeHandler)
+	v2.GET("/games/away/:team", h.GetGamesByAwayHandler)
+	v2.GET("/teams", h.GetTeamsHandler)
 
-	// Public health check (stays as-is)
-	r.GET("/api", getMainHandler)
+	// Public health check
+	r.GET("/api", h.GetMainHandler)
 
 	port := os.Getenv("PORT")
 	if port == "" {
