@@ -294,7 +294,7 @@ body {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 8px;
-  overflow: hidden;
+  overflow-x: auto;
   box-shadow: 0 1px 4px rgba(0,0,0,.06);
 }
 
@@ -497,3 +497,15 @@ pre code {
 /* ── Utility ──────────────────────────────────────── */
 .text-orange { color: var(--orange) !important; }
 .text-poly-blue { color: var(--poly-blue) !important; }
+
+/* ── Mobile ───────────────────────────────────────── */
+@media (max-width: 576px) {
+  .rivalry-title {
+    font-size: 1.65rem;
+    letter-spacing: -.5px;
+  }
+
+  .rivalry-title span {
+    white-space: normal !important;
+  }
+}
