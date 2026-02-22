@@ -2,9 +2,8 @@
 /archive
 .env
 CLAUDE.md
+*.exe
+*.db
 openapi.json
 ROADMAP.md
-*.db
-*.backup
-*.exe
 games.csv
