@@ -6,7 +6,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/rlanier-webdev/RivalryAPIv2/models"
+	"github.com/rlanier-webdev/CityPolyAPI/internal/models"
 )
 
 func SearchPageHandler(c *gin.Context) {

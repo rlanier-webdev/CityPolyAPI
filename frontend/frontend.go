@@ -1,7 +1,7 @@
 package frontend
 
 import (
-	"github.com/rlanier-webdev/RivalryAPIv2/models"
+	"github.com/rlanier-webdev/CityPolyAPI/internal/models"
 	"gorm.io/gorm"
 )
 

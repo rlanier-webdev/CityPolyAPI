@@ -1,0 +1,499 @@
+@import url('https://fonts.googleapis.com/css2?family=Source+Code+Pro:ital,wght@0,200..900;1,200..900&display=swap');
+
+/* ── Design tokens ────────────────────────────────── */
+:root {
+  --orange:       #ec6f09;
+  --orange-dark:  #c45e07;
+  --city-black:   #0d0d0d;
+  --poly-blue:    #1d4fa8;
+  --poly-blue-dk: #163d85;
+  --poly-blue-lt: #93c5fd;   /* shows on dark backgrounds */
+  --bg:           #f2f3f5;
+  --surface:      #ffffff;
+  --text:         #1a1a1a;
+  --muted:        #6c757d;
+  --border:       #e0e0e0;
+}
+
+/* ── Base ─────────────────────────────────────────── */
+body {
+  font-size: .9rem;
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* ── Navbar ───────────────────────────────────────── */
+.site-nav {
+  background-color: var(--city-black);
+  border-bottom: 3px solid var(--orange);
+}
+
+.site-nav .navbar-brand {
+  font-weight: 800;
+  font-size: 1.2rem;
+  letter-spacing: -.5px;
+  color: #fff;
+  text-decoration: none;
+}
+
+.site-nav .navbar-brand .city-name  { color: #fff; }
+.site-nav .navbar-brand .slash      { color: var(--orange); margin: 0 2px; }
+.site-nav .navbar-brand .poly-name  { color: var(--poly-blue-lt); }
+
+.site-nav .nav-link {
+  color: rgba(255,255,255,.7);
+  font-weight: 500;
+  padding: .45rem .85rem;
+  border-radius: 4px;
+  transition: color .15s, background-color .15s;
+}
+
+.site-nav .nav-link:hover {
+  color: #fff;
+  background-color: rgba(255,255,255,.08);
+}
+
+.site-nav .nav-link.active {
+  color: var(--orange);
+  background-color: rgba(236, 111, 9, .15);
+}
+
+/* ── Hero ─────────────────────────────────────────── */
+.hero {
+  background: linear-gradient(120deg, #0d0d0d 35%, #102060 65%, var(--poly-blue) 100%);
+  color: #fff;
+  padding: 4rem 0 3.5rem;
+  border-bottom: 3px solid var(--orange);
+  overflow: hidden;
+}
+
+.hero-badge {
+  display: inline-block;
+  background: rgba(236, 111, 9, .2);
+  border: 1px solid rgba(236, 111, 9, .4);
+  color: var(--orange);
+  font-size: .75rem;
+  font-weight: 600;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  padding: .3rem .75rem;
+  border-radius: 100px;
+  margin-bottom: 1.25rem;
+}
+
+.rivalry-title {
+  font-size: 2.6rem;
+  font-weight: 900;
+  letter-spacing: -1.5px;
+  line-height: 1.1;
+}
+
+.rivalry-title .vs {
+  color: var(--orange);
+  font-style: italic;
+  display: block;
+  font-size: 1.4rem;
+  letter-spacing: 0;
+  margin: .2rem 0;
+}
+
+.hero-subtitle {
+  color: rgba(255,255,255,.65);
+  font-size: .95rem;
+  margin-top: 1rem;
+  line-height: 1.6;
+}
+
+/* ── Matchup card (hero right side) ───────────────── */
+.matchup-card {
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 24px 64px rgba(0,0,0,.55);
+  max-width: 260px;
+  width: 100%;
+  flex-shrink: 0;
+}
+
+.matchup-panel {
+  padding: 1.75rem 1.5rem;
+  text-align: center;
+}
+
+.matchup-panel.city {
+  background: #111;
+  border-top: 4px solid var(--orange);
+}
+
+.matchup-panel.poly {
+  background: var(--poly-blue);
+  border-bottom: 4px solid var(--orange);
+}
+
+.matchup-vs {
+  background: var(--orange);
+  text-align: center;
+  font-weight: 900;
+  font-size: .7rem;
+  letter-spacing: .25em;
+  color: #fff;
+  padding: .4rem 0;
+}
+
+.matchup-abbr {
+  font-size: 2.4rem;
+  font-weight: 900;
+  color: #fff;
+  line-height: 1;
+  letter-spacing: -1px;
+}
+
+.matchup-full {
+  font-size: .7rem;
+  color: rgba(255,255,255,.55);
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  margin-top: .4rem;
+}
+
+.matchup-nickname {
+  font-size: .8rem;
+  color: rgba(255,255,255,.8);
+  margin-top: .3rem;
+  font-weight: 500;
+}
+
+/* ── Page header ──────────────────────────────────── */
+.page-header {
+  padding: 2rem 0 1.25rem;
+  border-bottom: 2px solid var(--border);
+  margin-bottom: 1.75rem;
+}
+
+.page-header h1 {
+  font-weight: 800;
+  font-size: 1.75rem;
+  margin: 0;
+}
+
+/* ── Section titles ───────────────────────────────── */
+.section-title {
+  font-weight: 700;
+  font-size: .78rem;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  color: var(--muted);
+  border-left: 4px solid var(--orange);
+  padding-left: .65rem;
+  margin-bottom: 1.25rem;
+}
+
+.section-title.blue {
+  border-left-color: var(--poly-blue);
+}
+
+/* ── Stat cards ───────────────────────────────────── */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: .85rem;
+}
+
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--city-black);
+  border-radius: 8px;
+  padding: 1.1rem 1rem;
+}
+
+.stat-card .stat-value {
+  font-size: 1.55rem;
+  font-weight: 800;
+  color: var(--orange);
+  line-height: 1;
+}
+
+.stat-card.orange {
+  border-top-color: var(--orange);
+}
+
+.stat-card.orange .stat-value {
+    color: var(--poly-blue)
+}
+
+.stat-card .stat-label {
+  font-size: .72rem;
+  color: var(--muted);
+  margin-top: .3rem;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+
+/* ── Rivalry banner (games page) ──────────────────── */
+.rivalry-banner {
+  display: flex;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 2px 12px rgba(0,0,0,.1);
+}
+
+.banner-city {
+  background: var(--city-black);
+  color: #fff;
+  flex: 1;
+  padding: 1rem 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+}
+
+.banner-poly {
+  background: var(--poly-blue);
+  color: #fff;
+  flex: 1;
+  padding: 1rem 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: .75rem;
+  text-align: right;
+}
+
+.banner-vs {
+  background: var(--orange);
+  color: #fff;
+  font-weight: 900;
+  font-size: .75rem;
+  letter-spacing: .15em;
+  display: flex;
+  align-items: center;
+  padding: 0 1rem;
+  white-space: nowrap;
+}
+
+.banner-school {
+  font-weight: 800;
+  font-size: 1.1rem;
+  letter-spacing: -.3px;
+}
+
+.banner-nick {
+  font-size: .7rem;
+  opacity: .65;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+
+/* ── Tables ───────────────────────────────────────── */
+.table-wrapper {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0,0,0,.06);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0;
+}
+
+thead {
+  background-color: var(--orange);
+}
+
+th {
+  color: #fff;
+  padding: 11px 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: .7rem;
+  letter-spacing: .08em;
+  text-align: left;
+  white-space: nowrap;
+}
+
+td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+
+tbody tr:last-child td {
+  border-bottom: none;
+}
+
+tbody tr:hover td {
+  background-color: rgba(236, 111, 9, .04);
+}
+
+.score-cell {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.notes-cell {
+  color: var(--muted);
+  font-size: .82rem;
+  font-style: italic;
+}
+
+/* ── Search form ──────────────────────────────────── */
+.search-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--poly-blue);
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 1.75rem;
+  box-shadow: 0 1px 4px rgba(0,0,0,.06);
+}
+
+.search-card .form-select,
+.search-card .form-control {
+  border-color: var(--border);
+  font-size: .875rem;
+}
+
+.search-card .form-select:focus,
+.search-card .form-control:focus {
+  border-color: var(--poly-blue);
+  box-shadow: 0 0 0 .2rem rgba(29, 79, 168, .15);
+}
+
+.search-hint {
+  font-size: .78rem;
+  color: var(--muted);
+  margin-top: .5rem;
+}
+
+/* ── Docs content ─────────────────────────────────── */
+.docs-body {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 2rem 2.5rem;
+  line-height: 1.8;
+  box-shadow: 0 1px 4px rgba(0,0,0,.06);
+}
+
+.docs-body h1 {
+  font-size: 1.6rem;
+  font-weight: 800;
+  margin-top: 0;
+  padding-bottom: .75rem;
+  border-bottom: 2px solid var(--border);
+}
+
+.docs-body h2 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin-top: 2rem;
+  padding-bottom: .4rem;
+  border-bottom: 2px solid var(--poly-blue);
+  color: var(--poly-blue);
+}
+
+.docs-body h3 {
+  font-size: .95rem;
+  font-weight: 700;
+  margin-top: 1.25rem;
+  color: var(--text);
+}
+
+.docs-body hr { border-color: var(--border); margin: 1.5rem 0; }
+
+/* ── Code ─────────────────────────────────────────── */
+code {
+  color: var(--orange);
+  background-color: #1e1e1e;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-family: "Source Code Pro", monospace;
+  font-size: .85em;
+  font-weight: 400;
+}
+
+pre {
+  background: #1e1e1e;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+pre code {
+  display: block;
+  padding: 1rem;
+  font-size: .8rem;
+  line-height: 1.6;
+  overflow-x: auto;
+  color: #d4d4d4;
+  background: transparent;
+}
+
+/* ── Buttons ──────────────────────────────────────── */
+.btn-primary {
+  background-color: var(--orange);
+  border-color: var(--orange);
+  color: #fff;
+  font-weight: 600;
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+  background-color: var(--orange-dark);
+  border-color: var(--orange-dark);
+  color: #fff;
+}
+
+.btn-blue {
+  background-color: var(--poly-blue);
+  border-color: var(--poly-blue);
+  color: #fff;
+  font-weight: 600;
+}
+
+.btn-blue:hover,
+.btn-blue:focus {
+  background-color: var(--poly-blue-dk);
+  border-color: var(--poly-blue-dk);
+  color: #fff;
+}
+
+/* ── Footer ───────────────────────────────────────── */
+.site-footer {
+  background-color: var(--city-black);
+  color: rgba(255,255,255,.35);
+  padding: 1.5rem 0;
+  margin-top: auto;
+  font-size: .8rem;
+}
+
+.site-footer a {
+  color: rgba(255,255,255,.35);
+  text-decoration: none;
+  transition: color .15s;
+}
+
+.site-footer a:hover {
+  color: var(--orange);
+}
+
+.footer-divider {
+  width: 2px;
+  height: 16px;
+  background: rgba(255,255,255,.1);
+  display: inline-block;
+  vertical-align: middle;
+  margin: 0 .75rem;
+}
+
+/* ── Utility ──────────────────────────────────────── */
+.text-orange { color: var(--orange) !important; }
+.text-poly-blue { color: var(--poly-blue) !important; }

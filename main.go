@@ -1,8 +1,8 @@
 package main
 
 import (
+	"html/template"
 	"log"
-	"net/http"
 	"os"
 	"sync"
 
@@ -18,36 +18,10 @@ import (
 )
 
 var (
-	db       *gorm.DB
-	err      error
-	once     sync.Once
-	limiters = make(map[string]*rate.Limiter)
-	limiterMu sync.Mutex
+	db   *gorm.DB
+	err  error
+	once sync.Once
 )
-
-// rateLimitMiddleware limits requests per IP address
-func rateLimitMiddleware() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		ip := c.ClientIP()
-
-		limiterMu.Lock()
-		limiter, exists := limiters[ip]
-		if !exists {
-			// Allow 10 requests per second with burst of 20
-			limiter = rate.NewLimiter(10, 20)
-			limiters[ip] = limiter
-		}
-		limiterMu.Unlock()
-
-		if !limiter.Allow() {
-			c.AbortWithStatusJSON(http.StatusTooManyRequests, gin.H{
-				"error": "Too many requests. Please slow down.",
-			})
-			return
-		}
-		c.Next()
-	}
-}
 
 func init() {
 	// Load .env file if present (local dev only, ignored in production)
@@ -59,17 +33,22 @@ func initDB() {
 		dsn := os.Getenv("DATABASE_URL")
 		if dsn != "" {
 			// Production: PostgreSQL (Railway)
-            db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
-        } else {
-            // Development: SQLite
-            db, err = gorm.Open(sqlite.Open("games.db"), &gorm.Config{})
-        }
+        db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
+    } else {
+        // Development: SQLite
+        db, err = gorm.Open(sqlite.Open("games.db"), &gorm.Config{})
+    }
 		
 		if err != nil {
 			log.Fatal("failed to connect to database: ", err)
 		}
 
-		err = db.AutoMigrate(&models.Game{})
+		err = db.AutoMigrate(
+			&models.Game{},
+			&models.User{},
+			&models.AuthToken{},
+			&models.APIKey{},
+		)
 		if err != nil {
 			log.Fatal("failed to migrate database: ", err)
 		}
@@ -90,6 +69,8 @@ func main() {
 	initDB()
 	frontend.SetDB(db)
 
+	h := &handlers.Handler{DB: db}
+
 	// Release mode
 	gin.SetMode(gin.ReleaseMode)
 	r := gin.Default()
@@ -100,31 +81,48 @@ func main() {
 	// CORS configuration for API access
 	r.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"*"},
-		AllowMethods:     []string{"GET", "OPTIONS"},
-		AllowHeaders:     []string{"Origin", "Content-Type", "Accept"},
+		AllowMethods:     []string{"GET", "OPTIONS", "POST", "DELETE"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "X-API-Key", "Authorization"},
 		AllowCredentials: false,
 		MaxAge:           86400,
 	}))
 
 	// Rate limiting (10 req/s per IP, burst of 20)
-	r.Use(rateLimitMiddleware())
+	r.Use(middleware.RateLimitMiddleware())
 
-	r.Static("/static", "./static")
-	r.LoadHTMLGlob("templates/*")
+	r.Static("/static", "./frontend/static")
+	tmpl := template.Must(template.ParseGlob("frontend/templates/*.html"))
+	tmpl = template.Must(tmpl.ParseGlob("frontend/templates/partials/*.html"))
+	r.SetHTMLTemplate(tmpl)
 
 	r.GET("/", frontend.IndexPageHandler)
 	r.GET("/search", frontend.SearchPageHandler)
 	r.GET("/docs", frontend.DocumentationPageHandler)
 	r.GET("/games", frontend.GamesPageHandler)
 
-	r.GET("/api", getMainHandler)
-	r.GET("/api/games", getGamesHandler)
-	r.GET("/api/games/:id", getGameByIDHandler)
-	r.GET("/api/games/year/:year", getGamesByYearHandler)
-	r.GET("/api/games/home/:team", getGamesByHomeHandler)
-	r.GET("/api/games/away/:team", getGamesByAwayHandler)
+	// Public auth (no middleware)
+	auth := r.Group("/api/auth")
+	auth.POST("/register", h.RegisterHandler)
+	auth.POST("/login", h.LoginHandler)
 
-	r.GET("/api/teams", getTeamsHandler)
+	// Bearer-protected auth
+	authBearer := auth.Group("/", middleware.BearerAuth(db))
+	authBearer.POST("/logout", h.LogoutHandler)
+	authBearer.POST("/keys", h.CreateAPIKeyHandler)
+	authBearer.GET("/keys", h.ListAPIKeyHandler)
+	authBearer.DELETE("/keys/:id", h.RevokeAPIKeyHandler)
+
+	// API key protected data routes
+	v2 := r.Group("/api/v2", middleware.APIKeyAuth(db))
+	v2.GET("/games", h.GetGamesHandler)
+	v2.GET("/games/:id", h.GetGameByIDHandler)
+	v2.GET("/games/year/:year", h.GetGamesByYearHandler)
+	v2.GET("/games/home/:team", h.GetGamesByHomeHandler)
+	v2.GET("/games/away/:team", h.GetGamesByAwayHandler)
+	v2.GET("/teams", h.GetTeamsHandler)
+
+	// Public health check
+	r.GET("/api", h.GetMainHandler)
 
 	port := os.Getenv("PORT")
 	if port == "" {
