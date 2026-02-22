@@ -1,6 +1,7 @@
 package main
 
 import (
+	"html/template"
 	"log"
 	"os"
 	"sync"
@@ -91,7 +92,9 @@ func main() {
 	r.Use(middleware.RateLimitMiddleware())
 
 	r.Static("/static", "./frontend/static")
-	r.LoadHTMLGlob("frontend/templates/*")
+	tmpl := template.Must(template.ParseGlob("frontend/templates/*.html"))
+	tmpl = template.Must(tmpl.ParseGlob("frontend/templates/partials/*.html"))
+	r.SetHTMLTemplate(tmpl)
 
 	r.GET("/", frontend.IndexPageHandler)
 	r.GET("/search", frontend.SearchPageHandler)

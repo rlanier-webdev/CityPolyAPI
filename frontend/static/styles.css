@@ -21,6 +21,9 @@ body {
   background-color: var(--bg);
   color: var(--text);
   font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
 
 /* ── Navbar ───────────────────────────────────────── */
@@ -468,7 +471,7 @@ pre code {
   background-color: var(--city-black);
   color: rgba(255,255,255,.35);
   padding: 1.5rem 0;
-  margin-top: 4rem;
+  margin-top: auto;
   font-size: .8rem;
 }
 

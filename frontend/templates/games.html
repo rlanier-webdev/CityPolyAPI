@@ -9,24 +9,7 @@
 </head>
 <body>
 
-    <nav class="navbar navbar-expand-lg site-nav">
-        <div class="container-xl">
-            <a class="navbar-brand" href="/">
-                <i class="fa-solid fa-football me-2 text-orange"></i><span class="city-name">City</span><span class="slash">/</span><span class="poly-name">Poly</span>
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto gap-1">
-                    <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/search">Search</a></li>
-                    <li class="nav-item"><a class="nav-link active" href="/games">Games</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/docs">Docs</a></li>
-                </ul>
-            </div>
-        </div>
-    </nav>
+    {{template "nav" .}}
 
     <div class="container-xl">
         <div class="page-header">
@@ -51,16 +34,16 @@
         </div>
 
         <p class="text-muted small mb-3">
-            <strong>Note:</strong> Game dates are recorded as November 1 of the respective year. Exact dates were unavailable for most historical records.
+            <strong>Note:</strong> If a game date shows November 1, the exact date was not available at the time of research — feel free to reach out if you can provide it. Games through 1993 were played on Thanksgiving; those dates should be accurate.
         </p>
 
         {{if .Games}}
-        <div class="table-wrapper">
+        <div class="table-wrapper mb-3">
             <table>
                 <thead>
                     <tr>
                         <th>#</th>
-                        <th>Date</th>
+                        <th>Year</th>
                         <th>Home Team</th>
                         <th>Away Team</th>
                         <th>Score</th>
@@ -71,7 +54,7 @@
                     {{range .Games}}
                     <tr>
                         <td>{{.ID}}</td>
-                        <td>{{.Date.Format "Jan 2, 2006"}}</td>
+                        <td>{{.Date.Format "2006"}}</td>
                         <td>{{.HomeTeam}}</td>
                         <td>{{.AwayTeam}}</td>
                         <td class="score-cell">{{.HomeTeamScore}} &ndash; {{.AwayTeamScore}}</td>
@@ -86,15 +69,7 @@
         {{end}}
     </div>
 
-    <footer class="site-footer">
-        <div class="container-xl d-flex justify-content-between align-items-center flex-wrap gap-2">
-            <span>&copy; 2026 City Poly Game Archive</span>
-            <span>Created by <a href="https://www.rashundawilliams.com" target="_blank">RaShunda Williams</a> City c/o 2003</span>
-            <a href="https://github.com/rlanier-webdev/CityPolyAPI" target="_blank" aria-label="GitHub">
-                <i class="fa-brands fa-github fa-lg"></i>
-            </a>
-        </div>
-    </footer>
+    {{template "footer" .}}
 
     <script src="https://kit.fontawesome.com/3b1ab49e86.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
