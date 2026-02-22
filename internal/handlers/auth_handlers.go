@@ -19,8 +19,8 @@ func (h *Handler) RegisterHandler(c *gin.Context) {
 	var request models.RegisterRequest
 
 	if err := c.ShouldBindJSON(&request); err != nil {
-		log.Printf("<HandlerName>: db error: %v", err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Internal server error"})
+		log.Printf("RegisterHandler: bind error: %v", err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
 		return
 	}
 
@@ -57,8 +57,8 @@ func (h *Handler) LoginHandler(c *gin.Context) {
 	var request models.LoginRequest
 
 	if err := c.ShouldBindJSON(&request); err != nil {
-		log.Printf("<HandlerName>: db error: %v", err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Internal server error"})
+		log.Printf("LoginHandler: bind error: %v", err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
 		return
 	}
 
