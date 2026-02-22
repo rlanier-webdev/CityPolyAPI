@@ -202,13 +202,9 @@ body {
 .stat-card {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-top: 3px solid var(--orange);
+  border-top: 3px solid var(--city-black);
   border-radius: 8px;
   padding: 1.1rem 1rem;
-}
-
-.stat-card.blue {
-  border-top-color: var(--poly-blue);
 }
 
 .stat-card .stat-value {
@@ -218,8 +214,12 @@ body {
   line-height: 1;
 }
 
-.stat-card.blue .stat-value {
-  color: var(--poly-blue);
+.stat-card.orange {
+  border-top-color: var(--orange);
+}
+
+.stat-card.orange .stat-value {
+    color: var(--poly-blue)
 }
 
 .stat-card .stat-label {
