@@ -32,6 +32,7 @@ var (
 const (
 	maxLoginFailures   = 10
 	loginLockoutPeriod = 15 * time.Minute
+	maxTrackedEmails   = 10_000
 )
 
 func init() {
@@ -117,6 +118,11 @@ func (h *Handler) LoginHandler(c *gin.Context) {
 	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(request.Password)); err != nil {
 		loginAttemptsMu.Lock()
 		if loginAttempts[email] == nil {
+			if len(loginAttempts) >= maxTrackedEmails {
+				loginAttemptsMu.Unlock()
+				c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
+				return
+			}
 			loginAttempts[email] = &loginAttempt{}
 		}
 		loginAttempts[email].count++

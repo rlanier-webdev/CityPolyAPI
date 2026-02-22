@@ -14,8 +14,10 @@ type ipLimiter struct {
     lastSeen time.Time
 }
 
+const maxTrackedIPs = 10_000
+
 var (
-	limiters = make(map[string]*ipLimiter)
+	limiters  = make(map[string]*ipLimiter)
 	limiterMu sync.Mutex
 )
 
@@ -45,6 +47,11 @@ func RateLimitMiddleware() gin.HandlerFunc {
 		limiterMu.Lock()
 		entry, exists := limiters[ip]
 		if !exists {
+			if len(limiters) >= maxTrackedIPs {
+				limiterMu.Unlock()
+				c.AbortWithStatusJSON(http.StatusTooManyRequests, gin.H{"error": "Too many requests. Please slow down."})
+				return
+			}
 			entry = &ipLimiter{limiter: rate.NewLimiter(10, 20)}
 			limiters[ip] = entry
 		}
