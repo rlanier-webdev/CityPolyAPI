@@ -301,8 +301,11 @@ table {
   margin: 0;
 }
 
+thead {
+  background-color: var(--orange);
+}
+
 th {
-  background-color: #1a1a1a;
   color: #fff;
   padding: 11px 14px;
   font-weight: 600;
@@ -311,11 +314,6 @@ th {
   letter-spacing: .08em;
   text-align: left;
   white-space: nowrap;
-}
-
-/* Blue accent on Poly-relevant columns */
-th.col-poly {
-  background-color: var(--poly-blue-dk);
 }
 
 td {
