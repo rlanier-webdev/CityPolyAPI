@@ -101,13 +101,13 @@ func main() {
 	authBearer.DELETE("/keys/:id", revokeAPIKeyHandler)
 
 	// API key protected data routes
-	api := r.Group("/api", middleware.APIKeyAuth(db))
-	api.GET("/games", getGamesHandler)
-	api.GET("/games/:id", getGameByIDHandler)
-	api.GET("/games/year/:year", getGamesByYearHandler)
-	api.GET("/games/home/:team", getGamesByHomeHandler)
-	api.GET("/games/away/:team", getGamesByAwayHandler)
-	api.GET("/teams", getTeamsHandler)
+	v2 := r.Group("/api/v2", middleware.APIKeyAuth(db))
+	v2.GET("/games", getGamesHandler)
+	v2.GET("/games/:id", getGameByIDHandler)
+	v2.GET("/games/year/:year", getGamesByYearHandler)
+	v2.GET("/games/home/:team", getGamesByHomeHandler)
+	v2.GET("/games/away/:team", getGamesByAwayHandler)
+	v2.GET("/teams", getTeamsHandler)
 
 	// Public health check (stays as-is)
 	r.GET("/api", getMainHandler)
