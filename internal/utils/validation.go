@@ -9,6 +9,10 @@ import (
 func ValidatePassword(password string) error {
 	var errs []string
 
+	if len(password) > 72 {
+		return errors.New("password must not exceed 72 characters")
+	}
+
 	var hasUpper, hasLower, hasNumber, hasSymbol bool
 	for _, char := range password {
 		switch {

@@ -1,10 +1,15 @@
 package main
 
 import (
+	"context"
 	"html/template"
 	"log"
+	"net/http"
 	"os"
+	"os/signal"
 	"sync"
+	"syscall"
+	"time"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -44,6 +49,15 @@ func initDB() {
 			log.Fatal("failed to connect to database: ", err)
 		}
 
+		sqlDB, err := db.DB()
+		if err != nil {
+			log.Fatal("failed to get underlying sql.DB: ", err)
+		}
+		sqlDB.SetMaxOpenConns(25)
+		sqlDB.SetMaxIdleConns(5)
+		sqlDB.SetConnMaxLifetime(5 * time.Minute)
+		sqlDB.SetConnMaxIdleTime(2 * time.Minute)
+
 		err = db.AutoMigrate(
 			&models.Game{},
 			&models.User{},
@@ -79,6 +93,8 @@ func main() {
 	// Trust Railway's proxy headers
 	r.SetTrustedProxies([]string{"127.0.0.1"})
 
+	r.Use(middleware.SecurityHeaders())
+	
 	// CORS configuration for API access
 	r.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"*"},
@@ -130,7 +146,23 @@ func main() {
 		port = "8080"
 	}
 
-	if err := r.Run(":" + port); err != nil {
-		log.Fatal("Failed to run server: ", err)
+	srv := &http.Server{Addr: ":" + port, Handler: r}
+
+	go func() {
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatal("Failed to run server: ", err)
+		}
+	}()
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+	log.Println("Shutting down server...")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	if err := srv.Shutdown(ctx); err != nil {
+		log.Fatal("Server forced to shutdown: ", err)
 	}
+	log.Println("Server exited")
 }

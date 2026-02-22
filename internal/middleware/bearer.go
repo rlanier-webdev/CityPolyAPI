@@ -3,6 +3,7 @@ package middleware
 import (
 	"crypto/sha256"
 	"encoding/hex"
+	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -44,8 +45,9 @@ func BearerAuth(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		// Update last used timestamp asynchronously
-		go db.Model(&token).Update("last_used_at", time.Now())
+		if err := db.Model(&token).Update("last_used_at", time.Now()).Error; err != nil {
+			log.Printf("bearer: failed to update last_used_at: %v", err)
+		}
 
 		// Attach userID to context for handlers
 		c.Set("userID", token.UserID)

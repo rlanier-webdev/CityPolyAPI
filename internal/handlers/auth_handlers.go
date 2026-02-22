@@ -4,8 +4,12 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/hex"
+	"log"
 	"net/http"
+	"strconv"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/rlanier-webdev/CityPolyAPI/internal/helpers"
@@ -14,11 +18,48 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+type loginAttempt struct {
+	count       int
+	lockedUntil time.Time
+	lastFailed  time.Time
+}
+
+var (
+	loginAttempts   = make(map[string]*loginAttempt)
+	loginAttemptsMu sync.Mutex
+)
+
+const (
+	maxLoginFailures   = 10
+	loginLockoutPeriod = 15 * time.Minute
+	maxTrackedEmails   = 10_000
+)
+
+func init() {
+	go cleanupLoginAttempts()
+}
+
+func cleanupLoginAttempts() {
+	ticker := time.NewTicker(10 * time.Minute)
+	defer ticker.Stop()
+	for range ticker.C {
+		loginAttemptsMu.Lock()
+		for email, attempt := range loginAttempts {
+			if time.Since(attempt.lastFailed) > 30*time.Minute {
+				delete(loginAttempts, email)
+			}
+		}
+		loginAttemptsMu.Unlock()
+	}
+}
+
+
 func (h *Handler) RegisterHandler(c *gin.Context) {
 	var request models.RegisterRequest
 
 	if err := c.ShouldBindJSON(&request); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		log.Printf("RegisterHandler: bind error: %v", err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
 		return
 	}
 
@@ -45,21 +86,28 @@ func (h *Handler) RegisterHandler(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{
-		"message": "User registered successfully",
-		"userID":  user.ID,
-	})
+	c.JSON(http.StatusCreated, gin.H{"message": "User registered successfully"})
 }
 
 func (h *Handler) LoginHandler(c *gin.Context) {
 	var request models.LoginRequest
 
 	if err := c.ShouldBindJSON(&request); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		log.Printf("LoginHandler: bind error: %v", err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
 		return
 	}
 
 	email := strings.ToLower(strings.TrimSpace(request.Email))
+	
+	loginAttemptsMu.Lock()
+	attempt, exists := loginAttempts[email]
+	if exists && time.Now().Before(attempt.lockedUntil) {
+		loginAttemptsMu.Unlock()
+		c.JSON(http.StatusTooManyRequests, gin.H{"error": "Account temporarily locked. Try again later."})
+		return
+	}
+	loginAttemptsMu.Unlock()
 
 	var user models.User
 	if err := h.DB.Where("email = ?", email).First(&user).Error; err != nil {
@@ -68,9 +116,29 @@ func (h *Handler) LoginHandler(c *gin.Context) {
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(request.Password)); err != nil {
+		loginAttemptsMu.Lock()
+		if loginAttempts[email] == nil {
+			if len(loginAttempts) >= maxTrackedEmails {
+				loginAttemptsMu.Unlock()
+				c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
+				return
+			}
+			loginAttempts[email] = &loginAttempt{}
+		}
+		loginAttempts[email].count++
+		loginAttempts[email].lastFailed = time.Now()
+		if loginAttempts[email].count >= maxLoginFailures {
+			loginAttempts[email].lockedUntil = time.Now().Add(loginLockoutPeriod)
+			loginAttempts[email].count = 0
+		}
+		loginAttemptsMu.Unlock()
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
 		return
 	}
+	
+	loginAttemptsMu.Lock()
+	delete(loginAttempts, email)
+	loginAttemptsMu.Unlock()
 
 	rawToken, tokenHash, err := helpers.BearerToken()
 	if err != nil {
@@ -78,10 +146,12 @@ func (h *Handler) LoginHandler(c *gin.Context) {
 		return
 	}
 
+	tokenExpiry := time.Now().Add(30 * 24 * time.Hour)
 	if err := h.DB.Create(&models.AuthToken{
 		UserID:    user.ID,
 		TokenHash: tokenHash,
 		IsActive:  true,
+		ExpiresAt: &tokenExpiry,
 	}).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to store token"})
 		return
@@ -134,8 +204,12 @@ func (h *Handler) ListAPIKeyHandler(c *gin.Context) {
 func (h *Handler) RevokeAPIKeyHandler(c *gin.Context) {
 	userIDVal, _ := c.Get("userID")
 	userID := userIDVal.(uint)
-	id := c.Param("id")
-
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid key ID"})
+		return
+	}
+	
 	result := h.DB.Model(&models.APIKey{}).Where("id = ? AND user_id = ?", id, userID).Update("is_active", false)
 	if result.Error != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to revoke key"})
