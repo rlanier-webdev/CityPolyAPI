@@ -1,4 +1,4 @@
-# Rivalry API v2
+# CityPolyAPI
 ------------
 ## Introduction
 ------------
