@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/rlanier-webdev/CityPolyAPI/models"
+	"github.com/rlanier-webdev/CityPolyAPI/internal/models"
 	"gorm.io/gorm"
 )
 

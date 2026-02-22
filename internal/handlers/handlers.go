@@ -1,4 +1,4 @@
-package main
+package handlers
 
 import (
 	"net/http"
@@ -6,11 +6,15 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/rlanier-webdev/CityPolyAPI/models"
-
+	"github.com/rlanier-webdev/CityPolyAPI/internal/models"
 	"gorm.io/gorm"
 )
-func getMainHandler(c *gin.Context) {
+
+type Handler struct {
+	DB *gorm.DB
+}
+
+func (h *Handler) GetMainHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"status":  "healthy",
 		"version": "1.0.0",
@@ -23,9 +27,9 @@ func getMainHandler(c *gin.Context) {
 }
 
 // Game Handlers
-func getGamesHandler(c *gin.Context) {
+func (h *Handler) GetGamesHandler(c *gin.Context) {
 	var games []models.Game
-	if err := db.Find(&games).Error; err != nil {
+	if err := h.DB.Find(&games).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -33,7 +37,7 @@ func getGamesHandler(c *gin.Context) {
 	c.JSON(200, games)
 }
 
-func getGameByIDHandler(c *gin.Context) {
+func (h *Handler) GetGameByIDHandler(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil || id <= 0 {
@@ -42,7 +46,7 @@ func getGameByIDHandler(c *gin.Context) {
 	}
 
 	var game models.Game
-	if err := db.First(&game, id).Error; err != nil {
+	if err := h.DB.First(&game, id).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Game not found"})
 		} else {
@@ -54,7 +58,7 @@ func getGameByIDHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, game)
 }
 
-func getGamesByYearHandler(c *gin.Context) {
+func (h *Handler) GetGamesByYearHandler(c *gin.Context) {
 	yearStr := c.Param("year")
 	year, err := strconv.Atoi(yearStr)
 	if err != nil {
@@ -66,7 +70,7 @@ func getGamesByYearHandler(c *gin.Context) {
 	endDate := time.Date(year+1, time.January, 1, 0, 0, 0, 0, time.UTC)
 
 	var games []models.Game
-	if err := db.Where("date >= ? AND date < ?", startDate, endDate).Find(&games).Error; err != nil {
+	if err := h.DB.Where("date >= ? AND date < ?", startDate, endDate).Find(&games).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -74,7 +78,7 @@ func getGamesByYearHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, games)
 }
 
-func getGamesByHomeHandler(c *gin.Context) {
+func (h *Handler) GetGamesByHomeHandler(c *gin.Context) {
 	homeTeam := c.Param("team")
 
 	if homeTeam == "" {
@@ -83,7 +87,7 @@ func getGamesByHomeHandler(c *gin.Context) {
 	}
 
 	var games []models.Game
-	if err := db.Where("home_team = ?", homeTeam).Find(&games).Error; err != nil {
+	if err := h.DB.Where("home_team = ?", homeTeam).Find(&games).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrive games: " + err.Error()})
 		return
 	}
@@ -96,16 +100,16 @@ func getGamesByHomeHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, games)
 }
 
-func getGamesByAwayHandler(c *gin.Context) {
-	homeTeam := c.Param("team")
+func (h *Handler) GetGamesByAwayHandler(c *gin.Context) {
+	awayTeam := c.Param("team")
 
-	if homeTeam == "" {
+	if awayTeam == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Team name cannot be empty"})
 		return
 	}
 
 	var games []models.Game
-	if err := db.Where("away_team = ?", homeTeam).Find(&games).Error; err != nil {
+	if err := h.DB.Where("away_team = ?", awayTeam).Find(&games).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrive games: " + err.Error()})
 		return
 	}
@@ -117,19 +121,17 @@ func getGamesByAwayHandler(c *gin.Context) {
 
 	c.JSON(http.StatusOK, games)
 }
-
-// End game handlers
 
 // Team Handlers
-func getTeamsHandler(c *gin.Context) {
+func (h *Handler) GetTeamsHandler(c *gin.Context) {
 	var homeTeams, awayTeams []string
 
-	if err := db.Model(&models.Game{}).Distinct().Pluck("home_team", &homeTeams).Error; err != nil {
+	if err := h.DB.Model(&models.Game{}).Distinct().Pluck("home_team", &homeTeams).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	if err := db.Model(&models.Game{}).Distinct().Pluck("away_team", &awayTeams).Error; err != nil {
+	if err := h.DB.Model(&models.Game{}).Distinct().Pluck("away_team", &awayTeams).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -150,5 +152,3 @@ func getTeamsHandler(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"teams": teams})
 }
-
-// End team handlers
