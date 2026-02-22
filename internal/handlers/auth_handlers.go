@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -15,6 +16,41 @@ import (
 	"github.com/rlanier-webdev/CityPolyAPI/internal/utils"
 	"golang.org/x/crypto/bcrypt"
 )
+
+type loginAttempt struct {
+	count       int
+	lockedUntil time.Time
+	lastFailed  time.Time
+}
+
+var (
+	loginAttempts   = make(map[string]*loginAttempt)
+	loginAttemptsMu sync.Mutex
+)
+
+const (
+	maxLoginFailures   = 10
+	loginLockoutPeriod = 15 * time.Minute
+)
+
+func init() {
+	go cleanupLoginAttempts()
+}
+
+func cleanupLoginAttempts() {
+	ticker := time.NewTicker(10 * time.Minute)
+	defer ticker.Stop()
+	for range ticker.C {
+		loginAttemptsMu.Lock()
+		for email, attempt := range loginAttempts {
+			if time.Since(attempt.lastFailed) > 30*time.Minute {
+				delete(loginAttempts, email)
+			}
+		}
+		loginAttemptsMu.Unlock()
+	}
+}
+
 
 func (h *Handler) RegisterHandler(c *gin.Context) {
 	var request models.RegisterRequest
@@ -64,6 +100,15 @@ func (h *Handler) LoginHandler(c *gin.Context) {
 	}
 
 	email := strings.ToLower(strings.TrimSpace(request.Email))
+	
+	loginAttemptsMu.Lock()
+	attempt, exists := loginAttempts[email]
+	if exists && time.Now().Before(attempt.lockedUntil) {
+		loginAttemptsMu.Unlock()
+		c.JSON(http.StatusTooManyRequests, gin.H{"error": "Account temporarily locked. Try again later."})
+		return
+	}
+	loginAttemptsMu.Unlock()
 
 	var user models.User
 	if err := h.DB.Where("email = ?", email).First(&user).Error; err != nil {
@@ -72,9 +117,24 @@ func (h *Handler) LoginHandler(c *gin.Context) {
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(request.Password)); err != nil {
+		loginAttemptsMu.Lock()
+		if loginAttempts[email] == nil {
+			loginAttempts[email] = &loginAttempt{}
+		}
+		loginAttempts[email].count++
+		loginAttempts[email].lastFailed = time.Now()
+		if loginAttempts[email].count >= maxLoginFailures {
+			loginAttempts[email].lockedUntil = time.Now().Add(loginLockoutPeriod)
+			loginAttempts[email].count = 0
+		}
+		loginAttemptsMu.Unlock()
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
 		return
 	}
+	
+	loginAttemptsMu.Lock()
+	delete(loginAttempts, email)
+	loginAttemptsMu.Unlock()
 
 	rawToken, tokenHash, err := helpers.BearerToken()
 	if err != nil {
