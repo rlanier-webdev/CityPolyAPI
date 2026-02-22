@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/rlanier-webdev/CityPolyAPI/internal/helpers"
@@ -81,10 +82,12 @@ func (h *Handler) LoginHandler(c *gin.Context) {
 		return
 	}
 
+	tokenExpiry := time.Now().Add(30 * 24 * time.Hour)
 	if err := h.DB.Create(&models.AuthToken{
 		UserID:    user.ID,
 		TokenHash: tokenHash,
 		IsActive:  true,
+		ExpiresAt: &tokenExpiry,
 	}).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to store token"})
 		return
