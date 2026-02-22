@@ -31,7 +31,7 @@ func (h *Handler) GetMainHandler(c *gin.Context) {
 func (h *Handler) GetGamesHandler(c *gin.Context) {
 	var games []models.Game
 	if err := h.DB.Find(&games).Error; err != nil {
-		log.Printf("<HandlerName>: db error: %v", err)
+		log.Printf("GetGamesHandler: db error: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		return
 	}
@@ -52,7 +52,7 @@ func (h *Handler) GetGameByIDHandler(c *gin.Context) {
 		if err == gorm.ErrRecordNotFound {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Game not found"})
 		} else {
-			log.Printf("<HandlerName>: db error: %v", err)
+			log.Printf("GetGameByIDHandler: db error: %v", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		}
 		return
@@ -74,7 +74,7 @@ func (h *Handler) GetGamesByYearHandler(c *gin.Context) {
 
 	var games []models.Game
 	if err := h.DB.Where("date >= ? AND date < ?", startDate, endDate).Find(&games).Error; err != nil {
-		log.Printf("<HandlerName>: db error: %v", err)
+		log.Printf("GetGamesByYearHandler: db error: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		return
 	}
@@ -92,7 +92,8 @@ func (h *Handler) GetGamesByHomeHandler(c *gin.Context) {
 
 	var games []models.Game
 	if err := h.DB.Where("home_team = ?", homeTeam).Find(&games).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrive games: " + err.Error()})
+		log.Printf("GetGamesByHomeHandler: db error: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		return
 	}
 
@@ -114,7 +115,8 @@ func (h *Handler) GetGamesByAwayHandler(c *gin.Context) {
 
 	var games []models.Game
 	if err := h.DB.Where("away_team = ?", awayTeam).Find(&games).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrive games: " + err.Error()})
+		log.Printf("GetGamesByAwayHandler: db error: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		return
 	}
 
@@ -131,13 +133,13 @@ func (h *Handler) GetTeamsHandler(c *gin.Context) {
 	var homeTeams, awayTeams []string
 
 	if err := h.DB.Model(&models.Game{}).Distinct().Pluck("home_team", &homeTeams).Error; err != nil {
-		log.Printf("<HandlerName>: db error: %v", err)
+		log.Printf("GetTeamsHandler: db error: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		return
 	}
 
 	if err := h.DB.Model(&models.Game{}).Distinct().Pluck("away_team", &awayTeams).Error; err != nil {
-		log.Printf("<HandlerName>: db error: %v", err)
+		log.Printf("GetTeamsHandler: db error: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		return
 	}
