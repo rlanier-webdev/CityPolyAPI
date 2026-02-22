@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/rlanier-webdev/CityPolyAPI/internal/helpers"
 	"github.com/rlanier-webdev/CityPolyAPI/internal/models"
 	"gorm.io/gorm"
 )
@@ -29,14 +30,15 @@ func (h *Handler) GetMainHandler(c *gin.Context) {
 
 // Game Handlers
 func (h *Handler) GetGamesHandler(c *gin.Context) {
+	limit, offset := helpers.ParsePagination(c)
 	var games []models.Game
-	if err := h.DB.Find(&games).Error; err != nil {
+	if err := h.DB.Limit(limit).Offset(offset).Find(&games).Error; err != nil {
 		log.Printf("GetGamesHandler: db error: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		return
 	}
 
-	c.JSON(200, games)
+	c.JSON(http.StatusOK, games)
 }
 
 func (h *Handler) GetGameByIDHandler(c *gin.Context) {

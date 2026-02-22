@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -197,8 +198,12 @@ func (h *Handler) ListAPIKeyHandler(c *gin.Context) {
 func (h *Handler) RevokeAPIKeyHandler(c *gin.Context) {
 	userIDVal, _ := c.Get("userID")
 	userID := userIDVal.(uint)
-	id := c.Param("id")
-
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid key ID"})
+		return
+	}
+	
 	result := h.DB.Model(&models.APIKey{}).Where("id = ? AND user_id = ?", id, userID).Update("is_active", false)
 	if result.Error != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to revoke key"})
