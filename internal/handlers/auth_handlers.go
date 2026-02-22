@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/hex"
+	"log"
 	"net/http"
 	"strings"
 
@@ -18,7 +19,8 @@ func (h *Handler) RegisterHandler(c *gin.Context) {
 	var request models.RegisterRequest
 
 	if err := c.ShouldBindJSON(&request); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		log.Printf("<HandlerName>: db error: %v", err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Internal server error"})
 		return
 	}
 
@@ -55,7 +57,8 @@ func (h *Handler) LoginHandler(c *gin.Context) {
 	var request models.LoginRequest
 
 	if err := c.ShouldBindJSON(&request); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		log.Printf("<HandlerName>: db error: %v", err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Internal server error"})
 		return
 	}
 

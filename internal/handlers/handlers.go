@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -30,7 +31,8 @@ func (h *Handler) GetMainHandler(c *gin.Context) {
 func (h *Handler) GetGamesHandler(c *gin.Context) {
 	var games []models.Game
 	if err := h.DB.Find(&games).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		log.Printf("<HandlerName>: db error: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		return
 	}
 
@@ -50,7 +52,8 @@ func (h *Handler) GetGameByIDHandler(c *gin.Context) {
 		if err == gorm.ErrRecordNotFound {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Game not found"})
 		} else {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			log.Printf("<HandlerName>: db error: %v", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		}
 		return
 	}
@@ -71,7 +74,8 @@ func (h *Handler) GetGamesByYearHandler(c *gin.Context) {
 
 	var games []models.Game
 	if err := h.DB.Where("date >= ? AND date < ?", startDate, endDate).Find(&games).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		log.Printf("<HandlerName>: db error: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		return
 	}
 
@@ -127,12 +131,14 @@ func (h *Handler) GetTeamsHandler(c *gin.Context) {
 	var homeTeams, awayTeams []string
 
 	if err := h.DB.Model(&models.Game{}).Distinct().Pluck("home_team", &homeTeams).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		log.Printf("<HandlerName>: db error: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		return
 	}
 
 	if err := h.DB.Model(&models.Game{}).Distinct().Pluck("away_team", &awayTeams).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		log.Printf("<HandlerName>: db error: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		return
 	}
 
