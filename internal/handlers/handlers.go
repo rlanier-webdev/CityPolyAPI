@@ -10,7 +10,7 @@ import (
 
 	"gorm.io/gorm"
 )
-func getMainHandler(c *gin.Context) {
+func GetMainHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"status":  "healthy",
 		"version": "1.0.0",
@@ -23,7 +23,7 @@ func getMainHandler(c *gin.Context) {
 }
 
 // Game Handlers
-func getGamesHandler(c *gin.Context) {
+func GetGamesHandler(c *gin.Context) {
 	var games []models.Game
 	if err := db.Find(&games).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -33,7 +33,7 @@ func getGamesHandler(c *gin.Context) {
 	c.JSON(200, games)
 }
 
-func getGameByIDHandler(c *gin.Context) {
+func GetGameByIDHandler(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil || id <= 0 {
@@ -54,7 +54,7 @@ func getGameByIDHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, game)
 }
 
-func getGamesByYearHandler(c *gin.Context) {
+func GetGamesByYearHandler(c *gin.Context) {
 	yearStr := c.Param("year")
 	year, err := strconv.Atoi(yearStr)
 	if err != nil {
@@ -74,7 +74,7 @@ func getGamesByYearHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, games)
 }
 
-func getGamesByHomeHandler(c *gin.Context) {
+func GetGamesByHomeHandler(c *gin.Context) {
 	homeTeam := c.Param("team")
 
 	if homeTeam == "" {
@@ -96,7 +96,7 @@ func getGamesByHomeHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, games)
 }
 
-func getGamesByAwayHandler(c *gin.Context) {
+func GetGamesByAwayHandler(c *gin.Context) {
 	homeTeam := c.Param("team")
 
 	if homeTeam == "" {
@@ -121,7 +121,7 @@ func getGamesByAwayHandler(c *gin.Context) {
 // End game handlers
 
 // Team Handlers
-func getTeamsHandler(c *gin.Context) {
+func GetTeamsHandler(c *gin.Context) {
 	var homeTeams, awayTeams []string
 
 	if err := db.Model(&models.Game{}).Distinct().Pluck("home_team", &homeTeams).Error; err != nil {

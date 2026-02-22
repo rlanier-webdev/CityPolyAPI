@@ -10,8 +10,8 @@ import (
 	"github.com/glebarez/sqlite"
 	"github.com/joho/godotenv"
 	"github.com/rlanier-webdev/CityPolyAPI/frontend"
-	"github.com/rlanier-webdev/CityPolyAPI/middleware"
-	"github.com/rlanier-webdev/CityPolyAPI/models"
+	"github.com/rlanier-webdev/CityPolyAPI/internal/middleware"
+	"github.com/rlanier-webdev/CityPolyAPI/internal/models"
 	"gorm.io/gorm"
 )
 

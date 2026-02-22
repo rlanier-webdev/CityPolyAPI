@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/rlanier-webdev/CityPolyAPI/models"
+	"github.com/rlanier-webdev/CityPolyAPI/internal/models"
 )
 
 func GamesPageHandler(c *gin.Context) {

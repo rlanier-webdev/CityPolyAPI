@@ -15,7 +15,7 @@ import (
 )
 
 
-func registerHandler(c *gin.Context) {
+func RegisterHandler(c *gin.Context) {
 	var request models.RegisterRequest
 
 	// Bind and validate the JSON request body
@@ -60,7 +60,7 @@ func registerHandler(c *gin.Context) {
 	})
 }
 
-func loginHandler(c *gin.Context) {
+func LoginHandler(c *gin.Context) {
 	var request models.LoginRequest
 
 	// Bind and validate the JSON request body
