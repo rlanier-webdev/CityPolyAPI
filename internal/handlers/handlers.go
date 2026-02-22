@@ -19,8 +19,8 @@ func (h *Handler) GetMainHandler(c *gin.Context) {
 		"status":  "healthy",
 		"version": "1.0.0",
 		"endpoints": gin.H{
-			"games": "/api/games",
-			"teams": "/api/teams",
+			"games": "/api/v2/games",
+			"teams": "/api/v2/teams",
 			"docs":  "/docs",
 		},
 	})
