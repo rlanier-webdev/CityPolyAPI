@@ -21,6 +21,11 @@ To access data endpoints you need an API key. Here's how to get one:
 3. **Create API Key** — Use the bearer token to generate an API key.
 4. **Use the API Key** — Pass it as `X-API-Key` on all data requests.
 
+For the curl examples below, set your base URL once:
+```bash
+BASE_URL=http://localhost:8080
+```
+
 ---
 
 ## Authentication Endpoints
@@ -37,6 +42,12 @@ To access data endpoints you need an API key. Here's how to get one:
   - `201 Created` — Account created.
   - `400 Bad Request` — Invalid input.
   - `409 Conflict` — Email already registered.
+- **curl**:
+  ```bash
+  curl -s -X POST "$BASE_URL/api/auth/register" \
+    -H "Content-Type: application/json" \
+    -d '{"email": "you@example.com", "password": "YourPassword1!"}'
+  ```
 
 ---
 
@@ -54,6 +65,13 @@ To access data endpoints you need an API key. Here's how to get one:
   { "token": "bearer_..." }
   ```
   - `401 Unauthorized` — Invalid credentials.
+- **curl**:
+  ```bash
+  TOKEN=$(curl -s -X POST "$BASE_URL/api/auth/login" \
+    -H "Content-Type: application/json" \
+    -d '{"email": "you@example.com", "password": "YourPassword1!"}' \
+    | jq -r '.token')
+  ```
 
 ---
 
@@ -66,6 +84,12 @@ To access data endpoints you need an API key. Here's how to get one:
   ```json
   { "key": "riv_...", "note": "Store this safely. It will not be shown again." }
   ```
+- **curl**:
+  ```bash
+  API_KEY=$(curl -s -X POST "$BASE_URL/api/auth/keys" \
+    -H "Authorization: Bearer $TOKEN" \
+    | jq -r '.key')
+  ```
 
 ---
 
@@ -75,6 +99,11 @@ To access data endpoints you need an API key. Here's how to get one:
 - **Auth**: `Authorization: Bearer <token>`
 - **Response**:
   - `200 OK` — Returns a list of your active API keys (prefixes only, not full keys).
+- **curl**:
+  ```bash
+  curl -s "$BASE_URL/api/auth/keys" \
+    -H "Authorization: Bearer $TOKEN"
+  ```
 
 ---
 
@@ -85,6 +114,11 @@ To access data endpoints you need an API key. Here's how to get one:
 - **Response**:
   - `204 No Content` — Key revoked.
   - `404 Not Found` — Key not found or doesn't belong to your account.
+- **curl**:
+  ```bash
+  curl -s -X DELETE "$BASE_URL/api/auth/keys/1" \
+    -H "Authorization: Bearer $TOKEN"
+  ```
 
 ---
 
@@ -94,6 +128,11 @@ To access data endpoints you need an API key. Here's how to get one:
 - **Auth**: `Authorization: Bearer <token>`
 - **Response**:
   - `204 No Content` — Bearer token revoked.
+- **curl**:
+  ```bash
+  curl -s -X POST "$BASE_URL/api/auth/logout" \
+    -H "Authorization: Bearer $TOKEN"
+  ```
 
 ---
 
@@ -111,6 +150,11 @@ X-API-Key: riv_...
 - **Response**:
   - `200 OK` — JSON array of games.
   - `401 Unauthorized` — Missing or invalid API key.
+- **curl**:
+  ```bash
+  curl -s "$BASE_URL/api/v2/games" \
+    -H "X-API-Key: $API_KEY"
+  ```
 
 ### Get Game by ID
 - **URL**: `/api/v2/games/:id`
@@ -121,6 +165,11 @@ X-API-Key: riv_...
 - **Response**:
   - `200 OK` — JSON object representing the game.
   - `404 Not Found` — Game not found.
+- **curl**:
+  ```bash
+  curl -s "$BASE_URL/api/v2/games/1" \
+    -H "X-API-Key: $API_KEY"
+  ```
 
 ### Get Games by Home Team
 - **URL**: `/api/v2/games/home/:name`
@@ -131,6 +180,11 @@ X-API-Key: riv_...
 - **Response**:
   - `200 OK` — JSON array of matching games.
   - `404 Not Found` — No games found.
+- **curl**:
+  ```bash
+  curl -s "$BASE_URL/api/v2/games/home/City" \
+    -H "X-API-Key: $API_KEY"
+  ```
 
 ### Get Games by Away Team
 - **URL**: `/api/v2/games/away/:name`
@@ -141,6 +195,11 @@ X-API-Key: riv_...
 - **Response**:
   - `200 OK` — JSON array of matching games.
   - `404 Not Found` — No games found.
+- **curl**:
+  ```bash
+  curl -s "$BASE_URL/api/v2/games/away/Poly" \
+    -H "X-API-Key: $API_KEY"
+  ```
 
 ### Get Games by Year
 - **URL**: `/api/v2/games/year/:year`
@@ -151,6 +210,11 @@ X-API-Key: riv_...
 - **Response**:
   - `200 OK` — JSON array of games.
   - `404 Not Found` — No games found for that year.
+- **curl**:
+  ```bash
+  curl -s "$BASE_URL/api/v2/games/year/2023" \
+    -H "X-API-Key: $API_KEY"
+  ```
 
 ### Get All Teams
 - **URL**: `/api/v2/teams`
@@ -158,6 +222,11 @@ X-API-Key: riv_...
 - **Description**: Returns all unique team names.
 - **Response**:
   - `200 OK` — JSON object with teams array.
+- **curl**:
+  ```bash
+  curl -s "$BASE_URL/api/v2/teams" \
+    -H "X-API-Key: $API_KEY"
+  ```
 
 ---
 
