@@ -21,11 +21,6 @@ To access data endpoints you need an API key. Here's how to get one:
 3. **Create API Key** — Use the bearer token to generate an API key.
 4. **Use the API Key** — Pass it as `X-API-Key` on all data requests.
 
-For the curl examples below, set your base URL once:
-```bash
-BASE_URL=http://localhost:8080
-```
-
 ---
 
 ## Authentication Endpoints
@@ -44,7 +39,7 @@ BASE_URL=http://localhost:8080
   - `409 Conflict` — Email already registered.
 - **curl**:
   ```bash
-  curl -s -X POST "$BASE_URL/api/auth/register" \
+  curl -X POST "https://projects.rivalryapi.rashundawilliams.com/api/auth/register" \
     -H "Content-Type: application/json" \
     -d '{"email": "you@example.com", "password": "YourPassword1!"}'
   ```
@@ -67,10 +62,9 @@ BASE_URL=http://localhost:8080
   - `401 Unauthorized` — Invalid credentials.
 - **curl**:
   ```bash
-  TOKEN=$(curl -s -X POST "$BASE_URL/api/auth/login" \
+  curl -X POST "https://projects.rivalryapi.rashundawilliams.com/api/auth/login" \
     -H "Content-Type: application/json" \
-    -d '{"email": "you@example.com", "password": "YourPassword1!"}' \
-    | jq -r '.token')
+    -d '{"email": "you@example.com", "password": "YourPassword1!"}'
   ```
 
 ---
@@ -86,9 +80,8 @@ BASE_URL=http://localhost:8080
   ```
 - **curl**:
   ```bash
-  API_KEY=$(curl -s -X POST "$BASE_URL/api/auth/keys" \
-    -H "Authorization: Bearer $TOKEN" \
-    | jq -r '.key')
+  curl -X POST "https://projects.rivalryapi.rashundawilliams.com/api/auth/keys" \
+    -H "Authorization: Bearer <token>"
   ```
 
 ---
@@ -101,8 +94,8 @@ BASE_URL=http://localhost:8080
   - `200 OK` — Returns a list of your active API keys (prefixes only, not full keys).
 - **curl**:
   ```bash
-  curl -s "$BASE_URL/api/auth/keys" \
-    -H "Authorization: Bearer $TOKEN"
+  curl "https://projects.rivalryapi.rashundawilliams.com/api/auth/keys" \
+    -H "Authorization: Bearer <token>"
   ```
 
 ---
@@ -116,8 +109,8 @@ BASE_URL=http://localhost:8080
   - `404 Not Found` — Key not found or doesn't belong to your account.
 - **curl**:
   ```bash
-  curl -s -X DELETE "$BASE_URL/api/auth/keys/1" \
-    -H "Authorization: Bearer $TOKEN"
+  curl -X DELETE "https://projects.rivalryapi.rashundawilliams.com/api/auth/keys/1" \
+    -H "Authorization: Bearer <token>"
   ```
 
 ---
@@ -130,8 +123,8 @@ BASE_URL=http://localhost:8080
   - `204 No Content` — Bearer token revoked.
 - **curl**:
   ```bash
-  curl -s -X POST "$BASE_URL/api/auth/logout" \
-    -H "Authorization: Bearer $TOKEN"
+  curl -X POST "https://projects.rivalryapi.rashundawilliams.com/api/auth/logout" \
+    -H "Authorization: Bearer <token>"
   ```
 
 ---
@@ -152,8 +145,8 @@ X-API-Key: riv_...
   - `401 Unauthorized` — Missing or invalid API key.
 - **curl**:
   ```bash
-  curl -s "$BASE_URL/api/v2/games" \
-    -H "X-API-Key: $API_KEY"
+  curl "https://projects.rivalryapi.rashundawilliams.com/api/v2/games" \
+    -H "X-API-Key: <api-key>"
   ```
 
 ### Get Game by ID
@@ -167,8 +160,8 @@ X-API-Key: riv_...
   - `404 Not Found` — Game not found.
 - **curl**:
   ```bash
-  curl -s "$BASE_URL/api/v2/games/1" \
-    -H "X-API-Key: $API_KEY"
+  curl "https://projects.rivalryapi.rashundawilliams.com/api/v2/games/1" \
+    -H "X-API-Key: <api-key>"
   ```
 
 ### Get Games by Home Team
@@ -182,8 +175,8 @@ X-API-Key: riv_...
   - `404 Not Found` — No games found.
 - **curl**:
   ```bash
-  curl -s "$BASE_URL/api/v2/games/home/City" \
-    -H "X-API-Key: $API_KEY"
+  curl "https://projects.rivalryapi.rashundawilliams.com/api/v2/games/home/City" \
+    -H "X-API-Key: <api-key>"
   ```
 
 ### Get Games by Away Team
@@ -197,8 +190,8 @@ X-API-Key: riv_...
   - `404 Not Found` — No games found.
 - **curl**:
   ```bash
-  curl -s "$BASE_URL/api/v2/games/away/Poly" \
-    -H "X-API-Key: $API_KEY"
+  curl "https://projects.rivalryapi.rashundawilliams.com/api/v2/games/away/Poly" \
+    -H "X-API-Key: <api-key>"
   ```
 
 ### Get Games by Year
@@ -212,8 +205,8 @@ X-API-Key: riv_...
   - `404 Not Found` — No games found for that year.
 - **curl**:
   ```bash
-  curl -s "$BASE_URL/api/v2/games/year/2023" \
-    -H "X-API-Key: $API_KEY"
+  curl "https://projects.rivalryapi.rashundawilliams.com/api/v2/games/year/2023" \
+    -H "X-API-Key: <api-key>"
   ```
 
 ### Get All Teams
@@ -224,8 +217,8 @@ X-API-Key: riv_...
   - `200 OK` — JSON object with teams array.
 - **curl**:
   ```bash
-  curl -s "$BASE_URL/api/v2/teams" \
-    -H "X-API-Key: $API_KEY"
+  curl "https://projects.rivalryapi.rashundawilliams.com/api/v2/teams" \
+    -H "X-API-Key: <api-key>"
   ```
 
 ---
