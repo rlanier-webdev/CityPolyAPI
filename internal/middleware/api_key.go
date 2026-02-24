@@ -38,9 +38,11 @@ func APIKeyAuth(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
+		go func() {
 		if err := db.Model(&key).Update("last_used_at", time.Now()).Error; err != nil {
-		log.Printf("api_key: failed to update last_used_at: %v", err)
-	}
+			log.Printf("api_key: failed to update last_used_at: %v", err)
+		}
+	}()
 
 		c.Set("userID", key.UserID)
 		c.Next()

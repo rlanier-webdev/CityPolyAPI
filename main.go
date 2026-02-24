@@ -54,9 +54,9 @@ func initDB() {
 			log.Fatal("failed to get underlying sql.DB: ", err)
 		}
 		sqlDB.SetMaxOpenConns(25)
-		sqlDB.SetMaxIdleConns(5)
-		sqlDB.SetConnMaxLifetime(5 * time.Minute)
-		sqlDB.SetConnMaxIdleTime(2 * time.Minute)
+		sqlDB.SetMaxIdleConns(10)
+		sqlDB.SetConnMaxLifetime(30 * time.Minute)
+		sqlDB.SetConnMaxIdleTime(10 * time.Minute)
 
 		err = db.AutoMigrate(
 			&models.Game{},
