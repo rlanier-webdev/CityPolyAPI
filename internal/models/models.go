@@ -7,10 +7,10 @@ import (
 )
 
 type Game struct {
-	ID            uint `gorm:"primaryKey"`
-	HomeTeam      string
-	AwayTeam      string
-	Date          utils.CustomDate
+	ID            uint             `gorm:"primaryKey"`
+	HomeTeam      string           `gorm:"index"`
+	AwayTeam      string           `gorm:"index"`
+	Date          utils.CustomDate `gorm:"index"`
 	HomeTeamScore int
 	AwayTeamScore int
 	Notes         string
