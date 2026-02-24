@@ -16,13 +16,53 @@
             <h1>Documentation</h1>
         </div>
 
-        <div class="row">
-            <div class="col-lg-9">
-                <div class="docs-body">
-                    {{.Content}}
-                </div>
+        <!-- Getting Started -->
+        <div class="docs-intro mb-5">
+            <p class="mb-3">This API provides endpoints to retrieve data about the historic City-Poly rivalry game. All data endpoints require an API key passed via the <code>X-API-Key</code> header.</p>
+            <div class="gs-steps">
+                <div class="gs-step"><span class="gs-num">1</span><span><strong>Register</strong> — Create an account with your email and password.</span></div>
+                <div class="gs-step"><span class="gs-num">2</span><span><strong>Login</strong> — Receive a bearer token.</span></div>
+                <div class="gs-step"><span class="gs-num">3</span><span><strong>Create API Key</strong> — Use the bearer token to generate an API key.</span></div>
+                <div class="gs-step"><span class="gs-num">4</span><span><strong>Use the API Key</strong> — Pass it as <code>X-API-Key</code> on all data requests.</span></div>
             </div>
         </div>
+
+        <!-- Endpoint groups parsed from README -->
+        {{range .Groups}}
+        <div class="section-title{{if .IsData}} blue{{end}} mb-3">{{.Title}}</div>
+        <div class="endpoint-grid mb-5">
+            {{range .Endpoints}}
+            <div class="endpoint-card">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <span class="method-badge method-{{.MethodClass}}">{{.Method}}</span>
+                    <span class="endpoint-card-name">{{.Name}}</span>
+                </div>
+                <div class="endpoint-card-path mb-2">{{.URL}}</div>
+                {{if .Description}}<p class="endpoint-card-desc mb-2">{{.Description}}</p>{{end}}
+                {{if .Auth}}<span class="endpoint-auth-tag">{{.Auth}}</span>{{end}}
+            </div>
+            {{end}}
+        </div>
+        {{end}}
+
+        <!-- Game Object -->
+        <div class="section-title mb-3">Game Object</div>
+        <div class="docs-schema mb-5">
+            <div class="schema-row"><code class="schema-key">id</code><span class="schema-type">integer</span><span class="schema-desc">Unique identifier</span></div>
+            <div class="schema-row"><code class="schema-key">home_team</code><span class="schema-type">string</span><span class="schema-desc">Name of the home team</span></div>
+            <div class="schema-row"><code class="schema-key">away_team</code><span class="schema-type">string</span><span class="schema-desc">Name of the away team</span></div>
+            <div class="schema-row"><code class="schema-key">date</code><span class="schema-type">string</span><span class="schema-desc">Date of the game — <code>YYYY-MM-DD</code></span></div>
+            <div class="schema-row"><code class="schema-key">home_team_score</code><span class="schema-type">integer</span><span class="schema-desc">Home team score</span></div>
+            <div class="schema-row"><code class="schema-key">away_team_score</code><span class="schema-type">integer</span><span class="schema-desc">Away team score</span></div>
+            <div class="schema-row"><code class="schema-key">notes</code><span class="schema-type">string</span><span class="schema-desc">Additional notes about the game</span></div>
+        </div>
+
+        <!-- Rate Limiting -->
+        <div class="section-title mb-3">Rate Limiting</div>
+        <div class="docs-note mb-5">
+            Requests are limited to <strong>10 per second</strong> per IP with a burst allowance of 20. Exceeding this returns <code>429 Too Many Requests</code>.
+        </div>
+
     </div>
 
     {{template "footer" .}}
