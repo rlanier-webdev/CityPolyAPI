@@ -39,7 +39,7 @@ To access data endpoints you need an API key. Here's how to get one:
   - `409 Conflict` — Email already registered.
 - **curl**:
   ```bash
-  curl -X POST "https://projects.rivalryapi.rashundawilliams.com/api/auth/register" \
+  curl -X POST "https://citypolyapi.rashundawilliams.com/api/auth/register" \
     -H "Content-Type: application/json" \
     -d '{"email": "you@example.com", "password": "YourPassword1!"}'
   ```
@@ -62,7 +62,7 @@ To access data endpoints you need an API key. Here's how to get one:
   - `401 Unauthorized` — Invalid credentials.
 - **curl**:
   ```bash
-  curl -X POST "https://projects.rivalryapi.rashundawilliams.com/api/auth/login" \
+  curl -X POST "https://citypolyapi.rashundawilliams.com/api/auth/login" \
     -H "Content-Type: application/json" \
     -d '{"email": "you@example.com", "password": "YourPassword1!"}'
   ```
@@ -80,7 +80,7 @@ To access data endpoints you need an API key. Here's how to get one:
   ```
 - **curl**:
   ```bash
-  curl -X POST "https://projects.rivalryapi.rashundawilliams.com/api/auth/keys" \
+  curl -X POST "https://citypolyapi.rashundawilliams.com/api/auth/keys" \
     -H "Authorization: Bearer <token>"
   ```
 
@@ -94,7 +94,7 @@ To access data endpoints you need an API key. Here's how to get one:
   - `200 OK` — Returns a list of your active API keys (prefixes only, not full keys).
 - **curl**:
   ```bash
-  curl "https://projects.rivalryapi.rashundawilliams.com/api/auth/keys" \
+  curl "https://citypolyapi.rashundawilliams.com/api/auth/keys" \
     -H "Authorization: Bearer <token>"
   ```
 
@@ -109,7 +109,7 @@ To access data endpoints you need an API key. Here's how to get one:
   - `404 Not Found` — Key not found or doesn't belong to your account.
 - **curl**:
   ```bash
-  curl -X DELETE "https://projects.rivalryapi.rashundawilliams.com/api/auth/keys/1" \
+  curl -X DELETE "https://citypolyapi.rashundawilliams.com/api/auth/keys/1" \
     -H "Authorization: Bearer <token>"
   ```
 
@@ -123,7 +123,7 @@ To access data endpoints you need an API key. Here's how to get one:
   - `204 No Content` — Bearer token revoked.
 - **curl**:
   ```bash
-  curl -X POST "https://projects.rivalryapi.rashundawilliams.com/api/auth/logout" \
+  curl -X POST "https://citypolyapi.rashundawilliams.com/api/auth/logout" \
     -H "Authorization: Bearer <token>"
   ```
 
@@ -145,7 +145,7 @@ X-API-Key: riv_...
   - `401 Unauthorized` — Missing or invalid API key.
 - **curl**:
   ```bash
-  curl "https://projects.rivalryapi.rashundawilliams.com/api/v2/games" \
+  curl "https://citypolyapi.rashundawilliams.com/api/v2/games" \
     -H "X-API-Key: <api-key>"
   ```
 
@@ -160,7 +160,7 @@ X-API-Key: riv_...
   - `404 Not Found` — Game not found.
 - **curl**:
   ```bash
-  curl "https://projects.rivalryapi.rashundawilliams.com/api/v2/games/1" \
+  curl "https://citypolyapi.rashundawilliams.com/api/v2/games/1" \
     -H "X-API-Key: <api-key>"
   ```
 
@@ -175,7 +175,7 @@ X-API-Key: riv_...
   - `404 Not Found` — No games found.
 - **curl**:
   ```bash
-  curl "https://projects.rivalryapi.rashundawilliams.com/api/v2/games/home/City" \
+  curl "https://citypolyapi.rashundawilliams.com/api/v2/games/home/City" \
     -H "X-API-Key: <api-key>"
   ```
 
@@ -190,7 +190,7 @@ X-API-Key: riv_...
   - `404 Not Found` — No games found.
 - **curl**:
   ```bash
-  curl "https://projects.rivalryapi.rashundawilliams.com/api/v2/games/away/Poly" \
+  curl "https://citypolyapi.rashundawilliams.com/api/v2/games/away/Poly" \
     -H "X-API-Key: <api-key>"
   ```
 
@@ -205,7 +205,7 @@ X-API-Key: riv_...
   - `404 Not Found` — No games found for that year.
 - **curl**:
   ```bash
-  curl "https://projects.rivalryapi.rashundawilliams.com/api/v2/games/year/2023" \
+  curl "https://citypolyapi.rashundawilliams.com/api/v2/games/year/2023" \
     -H "X-API-Key: <api-key>"
   ```
 
@@ -217,7 +217,7 @@ X-API-Key: riv_...
   - `200 OK` — JSON object with teams array.
 - **curl**:
   ```bash
-  curl "https://projects.rivalryapi.rashundawilliams.com/api/v2/teams" \
+  curl "https://citypolyapi.rashundawilliams.com/api/v2/teams" \
     -H "X-API-Key: <api-key>"
   ```
 
