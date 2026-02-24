@@ -81,6 +81,11 @@ func (h *Handler) GetGamesByYearHandler(c *gin.Context) {
 		return
 	}
 
+	if len(games) == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"message": "No games found for the given year"})
+		return
+	}
+
 	c.JSON(http.StatusOK, games)
 }
 
